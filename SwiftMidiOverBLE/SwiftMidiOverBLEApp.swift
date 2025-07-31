@@ -5,28 +5,47 @@
 //  Created by François Jean Raymond CLÉMENT on 25/05/2025.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 @main
 struct SwiftMidiOverBLEApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+    enum OperationMode: String, CaseIterable, Identifiable {
+        case central, peripheral
+        var id: Self { self }
+    }
 
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    @State private var midiPeripheral: MidiPeripheral = MidiPeripheral()
+    @State private var midiCentral: MidiCentral = MidiCentral()
+    @State private var operationMode: OperationMode = .peripheral
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            HStack {
+                Spacer()
+                Picker("Mode", selection: $operationMode) {
+                    ForEach(OperationMode.allCases) { mode in
+                        Text(mode.rawValue.capitalized)
+                    }
+                }
+                .pickerStyle(.segmented)
+                Spacer()
+            }
+            .padding(.top)
+            ZStack {
+                if operationMode == .central {
+                    CentralView(midiCentral: $midiCentral)
+                } else {
+                    PeripheralView(midiPeripheral: $midiPeripheral)
+                }
+            }
+            .task {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    midiPeripheral.addMidiServiceIfNeeded()
+                    midiCentral.startScanning()
+                    print("startup tasks initiated")
+                }
+            }
         }
-        .modelContainer(sharedModelContainer)
     }
 }
