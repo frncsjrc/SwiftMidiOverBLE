@@ -9,7 +9,9 @@ import CoreBluetooth
 import Foundation
 
 @Observable
-class MidiCentral: NSObject {
+class MidiCentral: Central {
+    static let shared = MidiCentral()
+
     var error: MidiError? = nil {
         didSet {
             if error != nil {
@@ -21,26 +23,111 @@ class MidiCentral: NSObject {
     }
 
     private var centralManager: CBCentralManager?
-    private var timeManager: MidiTimeManager = MidiTimeManager.shared
 
-    var discoveredPeripherals: [CBPeripheral: MidiDefinitions.PeerDetails] = [:]
-    var connectedPeripherals: [CBPeripheral: MidiDefinitions.ReceivedData] = [:]
+    private var discoveredPeripherals: Set<CBPeripheral> = []
 
-    override init() {
+    override private init() {
         super.init()
-
-        //        let bundleIdentifier = Bundle.main.bundleIdentifier
-        //        let centralIdentifier =
-        //            "\(bundleIdentifier ?? "FrncsJRClement").MIDIBluetoothCentral"
 
         centralManager = CBCentralManager(
             delegate: self,
             queue: nil,
             options: [
                 CBCentralManagerOptionShowPowerAlertKey: true
-                    //                CBCentralManagerOptionRestoreIdentifierKey: centralIdentifier,
             ]
         )
+    }
+
+    override var scan: Bool {
+        get {
+            centralManager?.isScanning ?? false
+        }
+
+        set {
+            DispatchQueue.main.async {
+                if newValue {
+                    self.startScanning()
+                } else {
+                    self.stopScanning()
+                }
+            }
+        }
+    }
+
+    override func connect(_ peripheral: UUID) {
+        if !checkCentral() {
+            return
+        }
+        guard let centralManager else {
+            setError(.invalidManager)
+            return
+        }
+        guard
+            let target = discoveredPeripherals.first(where: {
+                $0.identifier == peripheral
+            })
+        else {
+            setError(.invalidPeripheral)
+            return
+        }
+        print("connecting to ", target)
+        centralManager.connect(
+            target,
+            options: [CBConnectPeripheralOptionEnableAutoReconnect: true]
+        )
+    }
+
+    override func disconnect(_ peripheral: UUID) {
+        if !checkCentral() {
+            return
+        }
+        guard let centralManager else {
+            setError(.invalidManager)
+            return
+        }
+        guard
+            let target = discoveredPeripherals.first(where: {
+                $0.identifier == peripheral
+            })
+        else {
+            setError(.invalidPeripheral)
+            return
+        }
+
+        cleanup(target)
+        centralManager.cancelPeripheralConnection(target)
+    }
+
+    override func send(_ message: Message, to peripherals: [UUID] = []) {
+        if !checkCentral() {
+            return
+        }
+
+        let targets: [CBPeripheral] =
+            peripherals.isEmpty
+            ? discoveredPeripherals.filter({
+                remotePeripherals[$0.identifier]?.state ?? .offline
+                    == .connected
+            })
+            : discoveredPeripherals.filter({
+                peripherals.contains($0.identifier)
+            })
+
+        let packetSize =
+            targets.map({ $0.maximumWriteValueLength(for: .withoutResponse) })
+            .min() ?? 256
+
+        let packets = MessageManager.shared.encode(message, packetSize)
+
+        print(
+            "ready to write \(packets.count) packets to \(targets.count) peripherals"
+        )
+
+        for target in targets {
+            for packet in packets {
+                writeValue(target, packet)
+            }
+        }
     }
 }
 
@@ -65,46 +152,17 @@ extension MidiCentral {
             return
         }
         for peripheral in discoveredPeripherals {
-            cleanup(peripheral.key)
+            cleanup(peripheral)
         }
-        self.discoveredPeripherals.removeAll()
 
         print("start remote peripheral scanning")
         centralManager?.scanForPeripherals(
-            withServices: [MidiDefinitions.serviceUUID]
+            withServices: [MidiIdentifiers.midiService]
         )
     }
 
     func stopScanning() {
         centralManager?.stopScan()
-    }
-
-    func connect(_ peripheral: CBPeripheral) {
-        if !checkCentral() {
-            return
-        }
-        guard let centralManager else {
-            setError(.invalidManager)
-            return
-        }
-        print("connecting to ", peripheral)
-        centralManager.connect(
-            peripheral,
-            options: [CBConnectPeripheralOptionEnableAutoReconnect: true]
-        )
-    }
-
-    func disconnect(_ peripheral: CBPeripheral) {
-        if !checkCentral() {
-            return
-        }
-        guard let centralManager else {
-            setError(.invalidManager)
-            return
-        }
-
-        cleanup(peripheral)
-        centralManager.cancelPeripheralConnection(peripheral)
     }
 
     func readCharacteristicValue(
@@ -132,10 +190,10 @@ extension MidiCentral {
             return
         }
         let service = peripheral.services?.first(where: {
-            $0.uuid == MidiDefinitions.serviceUUID
+            $0.uuid == MidiIdentifiers.midiService
         })
         let cheracteristic = service?.characteristics?.first(where: {
-            $0.uuid == MidiDefinitions.characteristicUUID
+            $0.uuid == MidiIdentifiers.midiDataCharacteristic
         })
         guard let cheracteristic else {
             setError(.invalidCharacteristic)
@@ -173,25 +231,25 @@ extension MidiCentral: CBCentralManagerDelegate {
     ) {
         print("did discover peripheral")
         print(peripheral)
-        
+
         print("advertisementData: \(advertisementData)")
-        
+
         let peripheralName = peripheral.name ?? "Unknown"
         let advertisedName =
             (advertisementData[CBAdvertisementDataLocalNameKey] as? String
-            ?? "")
+                ?? "")
         let serviceName = advertisedName.isEmpty ? "" : " (\(advertisedName))"
         let name = "\(peripheralName)\(serviceName)"
-        
-        print("full name: \(name)")
 
-        if discoveredPeripherals[peripheral] == nil {
-            discoveredPeripherals[peripheral] = MidiDefinitions.PeerDetails(
+        print("full name: \"\(name)\"")
+
+        DispatchQueue.main.async {
+            self.discoveredPeripherals.insert(peripheral)
+            self.remotePeripherals[peripheral.identifier] = RemoteDetails(
                 name: name,
-                connected: peripheral.state == .connected
+                state: peripheral.state == .connected
+                    ? .connected : .disconnected
             )
-        } else {
-            discoveredPeripherals[peripheral]!.name = name
         }
     }
 
@@ -201,10 +259,10 @@ extension MidiCentral: CBCentralManagerDelegate {
     ) {
         print("Peripheral Connected ", peripheral)
         peripheral.delegate = self
-        peripheral.discoverServices([MidiDefinitions.serviceUUID])
+        peripheral.discoverServices([MidiIdentifiers.midiService])
 
-        discoveredPeripherals[peripheral]?.connected =
-            peripheral.state == .connected
+        remotePeripherals[peripheral.identifier]?.state =
+            peripheral.state == .connected ? .connected : .disconnected
     }
 
     func centralManager(
@@ -218,8 +276,8 @@ extension MidiCentral: CBCentralManagerDelegate {
             setError(.connectFailure(error.localizedDescription))
         }
 
-        discoveredPeripherals[peripheral]?.connected =
-            peripheral.state == .connected
+        remotePeripherals[peripheral.identifier]?.state =
+            peripheral.state == .connected ? .connected : .disconnected
     }
 
     func centralManager(
@@ -232,8 +290,8 @@ extension MidiCentral: CBCentralManagerDelegate {
         print("peripheral disconnected: ", peripheral)
         print("is reconnecting: ", isReconnecting)
 
-        discoveredPeripherals[peripheral]?.connected =
-            peripheral.state == .connected
+        remotePeripherals[peripheral.identifier]?.state =
+            peripheral.state == .connected ? .connected : .disconnected
 
         // disconnect not being a result of cancelPeripheralConnection
         if let error {
@@ -241,7 +299,7 @@ extension MidiCentral: CBCentralManagerDelegate {
             setError(.disconnectFailure(error.localizedDescription))
             // not automatically reconnecting
             if !isReconnecting {
-                self.connect(peripheral)
+                self.connect(peripheral.identifier)
             }
         }
     }
@@ -259,9 +317,9 @@ extension MidiCentral: CBPeripheralDelegate {
             return
         }
         for service in peripheral.services ?? [] {
-            if service.uuid == MidiDefinitions.serviceUUID {
+            if service.uuid == MidiIdentifiers.midiService {
                 peripheral.discoverCharacteristics(
-                    [MidiDefinitions.characteristicUUID],
+                    [MidiIdentifiers.midiDataCharacteristic],
                     for: service
                 )
             }
@@ -301,15 +359,10 @@ extension MidiCentral: CBPeripheralDelegate {
         print(service.characteristics as Any)
 
         for characteristic in service.characteristics ?? [] {
-            if characteristic.uuid == MidiDefinitions.characteristicUUID {
+            if characteristic.uuid == MidiIdentifiers.midiDataCharacteristic {
                 peripheral.readValue(for: characteristic)
                 peripheral.discoverDescriptors(for: characteristic)
                 peripheral.setNotifyValue(true, for: characteristic)
-
-                if connectedPeripherals[peripheral] == nil {
-                    connectedPeripherals[peripheral] =
-                        MidiDefinitions.ReceivedData()
-                }
             }
         }
 
@@ -380,7 +433,14 @@ extension MidiCentral: CBPeripheralDelegate {
             return
         }
         if let data = characteristic.value, !data.isEmpty {
-            decodePacket(peripheral, data)
+            DispatchQueue.main.async {
+                MessageManager.shared.decode(
+                    data,
+                    from: peripheral.identifier,
+                    at: .bluetoothMidiCentral,
+                    report: &self.error
+                )
+            }
         }
     }
 
@@ -393,61 +453,6 @@ extension MidiCentral: CBPeripheralDelegate {
         if let error {
             setError(.descriptorDiscoveryFailure(error.localizedDescription))
             return
-        }
-    }
-
-    private func decodePacket(_ requester: CBPeripheral, _ packet: Data) {
-        guard let messageBuffers = connectedPeripherals[requester] else {
-            self.error = .invalidCentral(
-                "Can't decode packet for unconnected peripheral: \(requester.identifier)"
-            )
-            return
-        }
-
-        var pendingSystemExclusiveMessage = messageBuffers
-            .pendingSystemExclusiveMessage
-
-        let decodedMessages = MidiMessage.decodePacket(
-            packet,
-            &pendingSystemExclusiveMessage,
-            &error
-        )
-
-        if error == nil {
-            connectedPeripherals[requester]!.pendingSystemExclusiveMessage =
-                pendingSystemExclusiveMessage
-            connectedPeripherals[requester]!.messages.append(
-                contentsOf: decodedMessages
-            )
-        } else {
-            connectedPeripherals[requester]!.pendingSystemExclusiveMessage = nil
-        }
-    }
-
-    func send(_ message: MidiMessage, to peripherals: [CBPeripheral] = []) {
-        if !checkCentral() {
-            return
-        }
-
-        let targets: [CBPeripheral] =
-            peripherals.isEmpty
-            ? discoveredPeripherals.keys.filter({ $0.state == .connected })
-            : peripherals
-
-        let mtu =
-            targets.map({ $0.maximumWriteValueLength(for: .withoutResponse) })
-            .min() ?? 256
-
-        let packets: [Data] = message.encodePackets(timeManager, mtu)
-
-        print(
-            "ready to write \(packets.count) packets to \(targets.count) peripherals"
-        )
-
-        for target in targets {
-            for packet in packets {
-                writeValue(target, packet)
-            }
         }
     }
 

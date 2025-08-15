@@ -7,105 +7,71 @@
 
 import SwiftUI
 
-struct PeripheralView: View {
-    @Binding var midiPeripheral: MidiPeripheral
+struct PeripheralView: View, MessageManagerDelegate {
+    @Environment(\.deviceGeometry) private var deviceGeometry
+    
+    @Binding var peripheral: Peripheral
+    
+    @State private var incomingMessages: [Message] = []
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading) {
-                Section(header: Text("Setup").font(.headline)) {
-                    Toggle(
-                        "Advertize Bluetooth MIDI",
-                        isOn: $midiPeripheral.advertize
-                    )
-                    .onChange(of: midiPeripheral.advertize) {
-                        midiPeripheral.updateAdvertising()
-                    }
-                    .padding()
+        VStack(alignment: .leading) {
+            Section(header: Text("Setup").font(.headline)) {
+                Toggle(
+                    "Advertize Bluetooth MIDI",
+                    isOn: $peripheral.advertize
+                )
+                .padding()
 
+                VStack {
                     Button(
                         "Sample 1",
                         systemImage: "play",
                         action: {
-                            midiPeripheral.send(MidiMessage.samples1[0])
+                            peripheral.send(Message.samples1[0])
                         }
                     )
-
+                    
                     Button(
                         "Sample 2",
                         systemImage: "play",
                         action: {
-                            midiPeripheral.send(MidiMessage.samples2[0])
+                            peripheral.send(Message.samples2[0])
                         }
                     )
-
+                    
                     Button(
                         "Sample 3",
                         systemImage: "play",
                         action: {
-                            midiPeripheral.send(MidiMessage.samples2[1])
+                            peripheral.send(Message.samples2[1])
                         }
                     )
                 }
                 .padding()
+            }
 
-                Section(header: Text("Last Incoming Messages").font(.headline))
-                {
-                    if midiPeripheral.subscribedCentrals.isEmpty {
-                        HStack {
-                            Spacer()
-                            Text("No central subscribed yet.")
-                                .foregroundColor(.secondary)
-                                .italic()
-                            Spacer()
-                        }
-                    } else {
-                        ForEach(
-                            midiPeripheral.subscribedCentrals.keys.sorted(by: {
-                                $0.identifier < $1.identifier
-                            }),
-                            id: \.self
-                        ) { central in
-                            let receivedData = midiPeripheral.subscribedCentrals[central]
-                            HStack {
-                                Label(
-                                    "\(central.identifier)",
-                                    systemImage: "pianokeys"
-                                )
-                                .font(.system(size: 12))
-                                .foregroundColor(.secondary)
-                            }
-                            if receivedData == nil {
-                                HStack {
-                                    Spacer()
-                                    Text("Central unsubscribed.")
-                                        .foregroundColor(.secondary)
-                                        .italic()
-                                    Spacer()
-                                }
-                            } else {
-                                MessageArrayView(messages: receivedData!.messages)
-                            }
-                        }
-                    }
-                }
-                .padding()
-
+            Section(header: Text("Incoming Messages").font(.headline)) {
+                MessageArrayView(messages: incomingMessages)
             }
         }
-        .padding()
         .onAppear {
             DispatchQueue.main.async {
-                midiPeripheral.addMidiServiceIfNeeded()
-                midiPeripheral.advertize = true
-                if midiPeripheral.error != nil {
-                    print(midiPeripheral.error!)
-                }
+                peripheral.startup()
+                peripheral.advertize = true
+            }
+        }
+    }
+    
+    func process(incoming messages: [Message]) {
+        DispatchQueue.main.async {
+            for message in messages {
+                self.incomingMessages.append(message)
             }
         }
     }
 }
 
 #Preview {
-    PeripheralView(midiPeripheral: .constant(MidiPeripheral()))
+    PeripheralView(peripheral: .constant(Peripheral()))
 }

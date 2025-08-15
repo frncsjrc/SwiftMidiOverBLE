@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct MessageArrayView: View {
-    var messages: [MidiMessage] = []
+    var messages: [Message] = []
 
     var body: some View {
-        VStack {
+        ScrollView {
             let messageCount = messages.count
             if messageCount < 1 {
                 HStack {
@@ -23,18 +23,21 @@ struct MessageArrayView: View {
                     Spacer()
                 }
             } else {
-                let firstIndex = max(0, messageCount - 6)
+                //                let firstIndex = max(0, messageCount - 6)
                 ForEach(
                     Array(
-                        (firstIndex..<messageCount).reversed()
+                        (0..<messageCount).reversed()
                     ),
                     id: \.self
                 ) { index in
                     HStack {
-                        Text(messages[index].toStringWithLocalStamp)
-                            .font(.system(size: 12))
-                            .lineLimit(1)
-                            .truncationMode(.tail)
+                        messages[index].portIcon
+                        Text(
+                            messages[index].toStringWithSourceNameAndLocalStamp
+                        )
+                        .font(.system(size: 12))
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                         Spacer()
                     }
                 }
@@ -45,5 +48,5 @@ struct MessageArrayView: View {
 }
 
 #Preview {
-    MessageArrayView(messages: MidiMessage.samples1)
+    MessageArrayView(messages: Message.samples2)
 }

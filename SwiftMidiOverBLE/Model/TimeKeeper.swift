@@ -7,15 +7,15 @@
 
 import Foundation
 
-class MidiTimeManager {
+class TimeKeeper {
     private let reference: UInt64 = currentTime()
 
     func elapsedTime(_ since: UInt64? = nil) -> UInt64 {
-        return MidiTimeManager.currentTime() - (since ?? reference)
+        return TimeKeeper.currentTime() - (since ?? reference)
     }
 
     func toString(_ time: UInt64? = nil, _ since: UInt64? = nil) -> String {
-        let convertedTime = (time ?? MidiTimeManager.currentTime()) - (since ?? reference)
+        let convertedTime = (time ?? TimeKeeper.currentTime()) - (since ?? reference)
         var processedTime = UInt64(convertedTime / 1_000_000)
 
         let milliseconds = processedTime % 1000
@@ -37,7 +37,7 @@ class MidiTimeManager {
         )
     }
     
-    static let shared = MidiTimeManager()
+    static let shared = TimeKeeper()
 
 
     static func currentTime() -> UInt64 {

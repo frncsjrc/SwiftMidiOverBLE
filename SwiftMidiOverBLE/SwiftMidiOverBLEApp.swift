@@ -15,8 +15,9 @@ struct SwiftMidiOverBLEApp: App {
         var id: Self { self }
     }
 
-    @State private var midiPeripheral: MidiPeripheral = MidiPeripheral()
-    @State private var midiCentral: MidiCentral = MidiCentral()
+    @State private var deviceGeometry: DeviceGeometry = .empty
+    @State private var peripheral: Peripheral = MidiPeripheral.shared
+    @State private var central: Central = MidiCentral.shared
     @State private var operationMode: OperationMode = .peripheral
 
     var body: some Scene {
@@ -34,15 +35,17 @@ struct SwiftMidiOverBLEApp: App {
             .padding(.top)
             ZStack {
                 if operationMode == .central {
-                    CentralView(midiCentral: $midiCentral)
+                    CentralView(central: $central)
                 } else {
-                    PeripheralView(midiPeripheral: $midiPeripheral)
+                    PeripheralView(peripheral: $peripheral)
                 }
             }
+            .environment(\.deviceGeometry, deviceGeometry)
+            .updateDeviceGeometry($deviceGeometry)
             .task {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    midiPeripheral.addMidiServiceIfNeeded()
-                    midiCentral.startScanning()
+                    peripheral.startup()
+                    central.scan = true
                     print("startup tasks initiated")
                 }
             }

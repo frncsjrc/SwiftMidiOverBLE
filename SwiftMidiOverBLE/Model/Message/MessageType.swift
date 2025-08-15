@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum MidiMessageType: String, CaseIterable, Identifiable, Codable {
+enum MessageType: String, CaseIterable, Identifiable, Codable {
     // channel messages
     case noteOn = "note on"
     case noteOff = "note off"
@@ -127,10 +127,10 @@ enum MidiMessageType: String, CaseIterable, Identifiable, Codable {
         }
     }
 
-    static func from(_ status: UInt8) -> MidiMessageType? {
+    static func from(_ status: UInt8) -> MessageType? {
         let channelStatus: UInt8 = status & 0xF0
 
-        for type in MidiMessageType.allCases {
+        for type in MessageType.allCases {
             switch type {
             case .noteOn, .noteOff, .polyPressure, .controlChange,
                 .channelPressure, .pitchBend, .programChange:

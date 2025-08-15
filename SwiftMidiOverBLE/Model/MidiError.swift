@@ -24,6 +24,7 @@ enum MidiError: Error {
     case unsupportedFeature(String)
     
     // Central role
+    case invalidPeripheral
     case connectFailure(String)
     case disconnectFailure(String)
     case serviceDiscoveryFailure(String)
@@ -35,4 +36,6 @@ enum MidiError: Error {
     
     case readError(String)
     case writeError(String)
+    
+    case decodeFailure(String)
 }
