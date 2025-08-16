@@ -15,7 +15,7 @@ class Central: NSObject {
 
     func peripheralName(_ peripheral: UUID) -> String {
         return remotePeripherals.first(where: { $0.key == peripheral })?.value
-            .name ?? "UNKNOWN"
+            .name ?? Constants.unknownRemoteName
     }
 
     func connect(_ peripheral: UUID) {

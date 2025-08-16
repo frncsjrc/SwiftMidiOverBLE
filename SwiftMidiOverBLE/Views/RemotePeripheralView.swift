@@ -19,7 +19,7 @@ struct RemotePeripheralView: View {
         details?.state ?? .offline == .connected ? "ON" : "OFF"
     }
     var name: String {
-        details?.name ?? "UNKNOWN"
+        details?.name ?? Constants.unknownRemoteName
     }
 
     var body: some View {
@@ -53,10 +53,26 @@ struct RemotePeripheralView: View {
     }
 }
 
-#Preview {
+#Preview("Remote 1") {
     @Previewable @State var central = Central()
     central.remotePeripherals = Central.remoteSamples1
-    let identifier = Central.remoteSamples1.first!.key
+    let identifier = Central.remoteSamples1.filter { $0.value.name == "Remote 1" }.keys.first!
+    
+    return RemotePeripheralView(central: $central, identifier: identifier)
+}
+
+#Preview("Remote 2") {
+    @Previewable @State var central = Central()
+    central.remotePeripherals = Central.remoteSamples1
+    let identifier = Central.remoteSamples1.filter { $0.value.name == "Remote 2" }.keys.first!
+    
+    return RemotePeripheralView(central: $central, identifier: identifier)
+}
+
+#Preview("Remote 3") {
+    @Previewable @State var central = Central()
+    central.remotePeripherals = Central.remoteSamples1
+    let identifier = Central.remoteSamples1.filter { $0.value.name == "Remote 3" }.keys.first!
     
     return RemotePeripheralView(central: $central, identifier: identifier)
 }

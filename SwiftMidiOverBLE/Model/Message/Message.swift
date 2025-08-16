@@ -56,7 +56,7 @@ class Message {
     }
     
     var sourceName: String {
-        guard let port = self.port, let source = self.source else { return "UNKNOWN" }
+        guard let port = self.port, let source = self.source else { return Constants.unknownRemoteName }
         
         switch port {
         case .bluetoothMidiPeripheral:
