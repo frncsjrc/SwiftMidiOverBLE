@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MessageArrayView: View {
+struct IncomingView: View {
     var messages: [Message] = []
 
     var body: some View {
@@ -15,7 +15,7 @@ struct MessageArrayView: View {
             let messageCount = messages.count
             if messageCount < 1 {
                 HStack {
-                    Text("No Messages")
+                    Text(String(localized: "No Messages", comment: "Warn no messages have been received"))
                         .font(.system(size: 12))
                         .italic()
                         .lineLimit(1)
@@ -47,6 +47,10 @@ struct MessageArrayView: View {
     }
 }
 
-#Preview {
-    MessageArrayView(messages: Message.samples2)
+#Preview("Populated") {
+    IncomingView(messages: Message.samples2)
+}
+
+#Preview("Empty") {
+    IncomingView(messages: [])
 }

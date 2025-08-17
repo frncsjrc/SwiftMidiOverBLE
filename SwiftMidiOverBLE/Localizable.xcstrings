@@ -1,0 +1,149 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Advertize" : {
+      "comment" : "Toggle advertize text",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Advertize"
+          }
+        }
+      }
+    },
+    "Destination" : {
+      "comment" : "Label for destination picker in outgoing view",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destination"
+          }
+        }
+      }
+    },
+    "No destinations available" : {
+      "comment" : "Warn no destinations are available in outgoing view",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No destinations availalable"
+          }
+        }
+      }
+    },
+    "No Messages" : {
+      "comment" : "Warn no messages have been received",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No messages"
+          }
+        }
+      }
+    },
+    "No remote peripherals discovered" : {
+      "comment" : "Warn no peripherals have been discovered",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No discovered remote peripherals"
+          }
+        }
+      }
+    },
+    "No subscribed remote centrals" : {
+      "comment" : "Warn no remote centrals have subscribed",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No subscribed remote centrals"
+          }
+        }
+      }
+    },
+    "Remote Centrals" : {
+      "comment" : "Section header for remote centrals in setup view",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remote Centrals"
+          }
+        }
+      }
+    },
+    "Remote Peripherals" : {
+      "comment" : "Section header for remote peripherals in setup view",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remote Peripherals"
+          }
+        }
+      }
+    },
+    "Sample 1" : {
+      "comment" : "Label for the first outgoing sample",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sample 1"
+          }
+        }
+      }
+    },
+    "Sample 2" : {
+      "comment" : "Label for the first outgoing sample",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sample 2"
+          }
+        }
+      }
+    },
+    "Sample 3" : {
+      "comment" : "Label for the first outgoing sample",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sample 3"
+          }
+        }
+      }
+    },
+    "Scan" : {
+      "comment" : "Toggle scan text",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan"
+          }
+        }
+      }
+    },
+    "UNKNOWN" : {
+      "comment" : "Capitalized unknown remote name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UNKNOWN"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

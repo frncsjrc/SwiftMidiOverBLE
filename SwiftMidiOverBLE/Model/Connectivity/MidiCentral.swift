@@ -129,6 +129,30 @@ class MidiCentral: Central {
             }
         }
     }
+
+    @MainActor
+    func requestRemoteName(for peripheral: UUID) -> String {
+        if let target = discoveredPeripherals.first(where: {
+            $0.identifier == peripheral
+        }) {
+            return target.name ?? Constants.unknownRemoteName
+        }
+        
+        if !checkCentral() {
+            return Constants.unknownRemoteName
+        }
+        
+        let remotesWithGapService = centralManager?.retrieveConnectedPeripherals(withServices: [Constants.gapService, Constants.midiService])
+        let remotePeripheral = remotesWithGapService?.first(where: { $0.identifier == peripheral })
+        let remoteGapService = remotePeripheral?.services?.first(where: { $0.uuid == Constants.gapService })
+        let remoteDeviceNameCharacteristic = remoteGapService?.characteristics?.first(where: { $0.uuid == Constants.deviceNameCharacteristic })
+        let remoteDeviceNameValue = remoteDeviceNameCharacteristic?.value
+        if let deviceName = String(bytes: remoteDeviceNameValue ?? Data(), encoding: .utf8) {
+            return deviceName.isEmpty ? Constants.unknownRemoteName : deviceName
+        } else {
+            return Constants.unknownRemoteName
+        }
+    }
 }
 
 extension MidiCentral {
@@ -157,11 +181,14 @@ extension MidiCentral {
 
         print("start remote peripheral scanning")
         centralManager?.scanForPeripherals(
-            withServices: [MidiIdentifiers.midiService]
+            withServices: [
+                Constants.gapService, Constants.midiService,
+            ]
         )
     }
 
     func stopScanning() {
+        print("stop remote peripheral scanning")
         centralManager?.stopScan()
     }
 
@@ -190,10 +217,10 @@ extension MidiCentral {
             return
         }
         let service = peripheral.services?.first(where: {
-            $0.uuid == MidiIdentifiers.midiService
+            $0.uuid == Constants.midiService
         })
         let cheracteristic = service?.characteristics?.first(where: {
-            $0.uuid == MidiIdentifiers.midiDataCharacteristic
+            $0.uuid == Constants.midiDataCharacteristic
         })
         guard let cheracteristic else {
             setError(.invalidCharacteristic)
@@ -234,7 +261,7 @@ extension MidiCentral: CBCentralManagerDelegate {
 
         print("advertisementData: \(advertisementData)")
 
-        let peripheralName = peripheral.name ?? "Unknown"
+        let peripheralName = peripheral.name ?? Constants.unknownRemoteName
         let advertisedName =
             (advertisementData[CBAdvertisementDataLocalNameKey] as? String
                 ?? "")
@@ -259,7 +286,7 @@ extension MidiCentral: CBCentralManagerDelegate {
     ) {
         print("Peripheral Connected ", peripheral)
         peripheral.delegate = self
-        peripheral.discoverServices([MidiIdentifiers.midiService])
+        peripheral.discoverServices([Constants.midiService])
 
         remotePeripherals[peripheral.identifier]?.state =
             peripheral.state == .connected ? .connected : .disconnected
@@ -317,9 +344,9 @@ extension MidiCentral: CBPeripheralDelegate {
             return
         }
         for service in peripheral.services ?? [] {
-            if service.uuid == MidiIdentifiers.midiService {
+            if service.uuid == Constants.midiService {
                 peripheral.discoverCharacteristics(
-                    [MidiIdentifiers.midiDataCharacteristic],
+                    [Constants.midiDataCharacteristic],
                     for: service
                 )
             }
@@ -359,7 +386,7 @@ extension MidiCentral: CBPeripheralDelegate {
         print(service.characteristics as Any)
 
         for characteristic in service.characteristics ?? [] {
-            if characteristic.uuid == MidiIdentifiers.midiDataCharacteristic {
+            if characteristic.uuid == Constants.midiDataCharacteristic {
                 peripheral.readValue(for: characteristic)
                 peripheral.discoverDescriptors(for: characteristic)
                 peripheral.setNotifyValue(true, for: characteristic)

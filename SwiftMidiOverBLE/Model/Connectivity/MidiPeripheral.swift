@@ -35,16 +35,12 @@ class MidiPeripheral: Peripheral {
     private let peripheralManufacturer = "François Jean Raymond CLÉMENT"
 
     private var peripheralManager: CBPeripheralManager?
-    // A because CoreBluetooth confuse GAP and GATT, a central manager is required to access
-    // some subscriber services such as
-    private var centralManager: CBCentralManager?
 
     private var midiService: CBMutableService?
     private var midiCharacteristic: CBMutableCharacteristic?
     private var midiData: Data = Data()
 
     private var subscribedCentrals: Set<CBCentral> = []
-    private var discoveredPeripherals: Set<CBPeripheral> = []
 
     override private init() {
         super.init()
@@ -60,14 +56,6 @@ class MidiPeripheral: Peripheral {
                 CBPeripheralManagerOptionShowPowerAlertKey: true,
                 CBPeripheralManagerOptionRestoreIdentifierKey:
                     peripheralIdentifier,
-            ]
-        )
-
-        centralManager = CBCentralManager(
-            delegate: self,
-            queue: nil,
-            options: [
-                CBCentralManagerOptionShowPowerAlertKey: true
             ]
         )
     }
@@ -114,6 +102,11 @@ class MidiPeripheral: Peripheral {
                 onSubscribedCentrals: targets
             )
         }
+    }
+    
+    @MainActor
+    func setSubscriberName(_ name: String, for central: UUID) {
+        remoteCentrals[central]?.name = name
     }
 }
 
@@ -188,7 +181,7 @@ extension MidiPeripheral {
         }
 
         midiService = CBMutableService(
-            type: MidiIdentifiers.midiService,
+            type: Constants.midiService,
             primary: true,
         )
 
@@ -198,7 +191,7 @@ extension MidiPeripheral {
         }
 
         midiCharacteristic = CBMutableCharacteristic(
-            type: MidiIdentifiers.midiDataCharacteristic,
+            type: Constants.midiDataCharacteristic,
             properties: [
                 .read, .writeWithoutResponse, .notify,
                 .notifyEncryptionRequired,
@@ -234,64 +227,14 @@ extension MidiPeripheral {
             print("about to start advertising")
             peripheralManager!.startAdvertising([
                 CBAdvertisementDataServiceUUIDsKey: [
-                    MidiIdentifiers.midiService
+                    Constants.midiService
                 ],
                 CBAdvertisementDataLocalNameKey: peripheralName,
-            ])
-            
-            // Scan peripherals with GAP service to retrieve subscriber names
-            centralManager?.scanForPeripherals(withServices: [
-                MidiIdentifiers.gapService
             ])
         } else if !advertize && peripheralManager!.isAdvertising {
             print("about to stop advertising")
             peripheralManager!.stopAdvertising()
-            centralManager?.stopScan()
         }
-    }
-
-    @MainActor
-    private func requestName(from central: CBCentral) {
-        guard
-            let peripheral = centralManager?.retrieveConnectedPeripherals(
-                withServices: [MidiIdentifiers.gapService]).first(where: {
-                    $0.identifier == central.identifier
-                })
-        else {
-            return
-        }
-
-        guard peripheral.state == .connected else {
-            centralManager?.connect(peripheral)
-            return
-        }
-
-        guard
-            let gapService = peripheral.services?.first(where: {
-                $0.uuid == MidiIdentifiers.gapService
-            })
-        else {
-            peripheral.discoverServices([MidiIdentifiers.gapService])
-            return
-        }
-
-        guard
-            let deviceNameCharacteristic =
-                gapService.characteristics?.first(where: {
-                    $0.uuid == MidiIdentifiers.deviceNameCharacteristic
-                })
-        else {
-            peripheral.discoverCharacteristics(
-                [MidiIdentifiers.deviceNameCharacteristic],
-                for: gapService
-            )
-            return
-        }
-
-        guard let deviceName = deviceNameCharacteristic.value else { return }
-
-        self.remoteCentrals[central.identifier]?.name =
-            String(data: deviceName, encoding: .utf8) ?? "Unknown"
     }
 
 }
@@ -326,11 +269,11 @@ extension MidiPeripheral: CBPeripheralManagerDelegate {
             {
                 centrals.forEach {
                     self.subscribedCentrals.insert($0)
+                    let remoteName = MidiCentral.shared.requestRemoteName(for: $0.identifier)
                     self.remoteCentrals[$0.identifier]? = RemoteDetails(
-                        name: "Unknown",
+                        name: remoteName,
                         state: .connected
                     )
-                    self.requestName(from: $0)
                 }
             }
         }
@@ -355,7 +298,7 @@ extension MidiPeripheral: CBPeripheralManagerDelegate {
         _ peripheral: CBPeripheralManager,
         error: (any Error)?
     ) {
-        print("did start advertising: \(String(describing: error))")
+        print("did start advertising with error: \(String(describing: error))")
         if let error {
             DispatchQueue.main.async {
                 self.advertize = false
@@ -374,14 +317,14 @@ extension MidiPeripheral: CBPeripheralManagerDelegate {
 
         DispatchQueue.main.async {
             let currentName = self.remoteCentrals[central.identifier]?.name
-            if currentName != nil && currentName != "Unknown" {
+            if currentName != nil && currentName != Constants.unknownRemoteName {
                 self.remoteCentrals[central.identifier]?.state = .connected
             } else {
+                let remoteName = MidiCentral.shared.requestRemoteName(for: central.identifier)
                 self.remoteCentrals[central.identifier] = RemoteDetails(
-                    name: "Unknown",
+                    name: remoteName,
                     state: .connected
                 )
-                self.requestName(from: central)
             }
         }
     }
@@ -437,191 +380,3 @@ extension MidiPeripheral: CBPeripheralManagerDelegate {
         }
     }
 }
-
-/*
- * The central manager is used solely to retrieve the Device Name characteristic (0x2A00) from the GAP service (0x1800) for subscribed centrals
- */
-extension MidiPeripheral: CBCentralManagerDelegate {
-    func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        if central.state == .poweredOff {
-            self.error = .bluetoothNotAvailable
-        }
-    }
-
-    func centralManager(
-        _ central: CBCentralManager,
-        didDiscover peripheral: CBPeripheral,
-        advertisementData: [String: Any],
-        rssi RSSI: NSNumber
-    ) {
-        print("did discover peripheral")
-        print(peripheral)
-    }
-
-    func centralManager(
-        _ central: CBCentralManager,
-        didConnect peripheral: CBPeripheral
-    ) {
-        print("Peripheral Connected ", peripheral)
-        self.discoveredPeripherals.insert(peripheral)
-        peripheral.delegate = self
-        peripheral.discoverServices([MidiIdentifiers.gapService])
-    }
-
-    func centralManager(
-        _ central: CBCentralManager,
-        didFailToConnect peripheral: CBPeripheral,
-        error: Error?
-    ) {
-        print("Failed to connect to ", peripheral)
-        if let error {
-            self.error = .connectFailure(error.localizedDescription)
-        }
-    }
-
-    func centralManager(
-        _ central: CBCentralManager,
-        didDisconnectPeripheral peripheral: CBPeripheral,
-        timestamp: CFAbsoluteTime,
-        isReconnecting: Bool,
-        error: (any Error)?
-    ) {
-        print("peripheral disconnected: ", peripheral)
-    }
-
-}  // CBCentralManagerDelegate extension
-
-extension MidiPeripheral: CBPeripheralDelegate {
-    func peripheral(
-        _ peripheral: CBPeripheral,
-        didDiscoverServices error: (any Error)?
-    ) {
-        print("service discovered for peripheral:", peripheral)
-        if let error {
-            self.error = .serviceDiscoveryFailure(error.localizedDescription)
-            return
-        }
-
-        for service in peripheral.services ?? [] {
-            if service.uuid == MidiIdentifiers.gapService {
-                peripheral.discoverCharacteristics(
-                    [MidiIdentifiers.deviceNameCharacteristic],
-                    for: service
-                )
-            }
-        }
-    }
-
-    func peripheral(
-        _ peripheral: CBPeripheral,
-        didModifyServices invalidatedServices: [CBService]
-    ) {
-        print("didModifyServices: ", invalidatedServices)
-        peripheral.discoverServices(invalidatedServices.map({ $0.uuid }))
-    }
-
-    func peripheral(
-        _ peripheral: CBPeripheral,
-        didDiscoverIncludedServicesFor service: CBService,
-        error: (any Error)?
-    ) {
-        print("discovered included services")
-        print("included services :", service.includedServices as Any)
-
-        if let error {
-            self.error = .includedServiceDiscoveryFailure(
-                error.localizedDescription
-            )
-            return
-        }
-    }
-
-    func peripheral(
-        _ peripheral: CBPeripheral,
-        didDiscoverCharacteristicsFor service: CBService,
-        error: (any Error)?
-    ) {
-        print("characteristic found for service: ", service)
-        print(service.characteristics as Any)
-
-        for characteristic in service.characteristics ?? [] {
-            if characteristic.uuid == MidiIdentifiers.deviceNameCharacteristic {
-                peripheral.readValue(for: characteristic)
-            }
-        }
-
-        if let error {
-            self.error = .characteristicDiscoveryFailure(
-                error.localizedDescription
-            )
-            return
-        }
-    }
-
-    func peripheral(
-        _ peripheral: CBPeripheral,
-        didDiscoverDescriptorsFor characteristic: CBCharacteristic,
-        error: (any Error)?
-    ) {
-        print("descriptor found for characteristic: ", characteristic)
-        print(characteristic.descriptors as Any)
-
-        if let error {
-            self.error = .descriptorDiscoveryFailure(error.localizedDescription)
-            return
-        }
-    }
-
-    func peripheral(
-        _ peripheral: CBPeripheral,
-        didUpdateNotificationStateFor characteristic: CBCharacteristic,
-        error: (any Error)?
-    ) {
-        if let error {
-            self.error = .notificationFailure(error.localizedDescription)
-        }
-
-    }
-
-    func peripheral(
-        _ peripheral: CBPeripheral,
-        didWriteValueFor characteristic: CBCharacteristic,
-        error: (any Error)?
-    ) {
-        print("didWriteValueFor")
-
-        if let error {
-            print("error writing value")
-            self.error = .writeError(error.localizedDescription)
-            return
-        }
-    }
-
-    func peripheral(
-        _ peripheral: CBPeripheral,
-        didUpdateValueFor characteristic: CBCharacteristic,
-        error: (any Error)?
-    ) {
-        print("didUpdateValueFor characteristic", characteristic)
-
-        if let error {
-            self.error = .characteristicUpdateFailure(
-                error.localizedDescription
-            )
-            return
-        }
-    }
-
-    func peripheral(
-        _ peripheral: CBPeripheral,
-        didUpdateValueFor descriptor: CBDescriptor,
-        error: (any Error)?
-    ) {
-        print("didUpdateValueFor descriptor", descriptor)
-        if let error {
-            self.error = .descriptorDiscoveryFailure(error.localizedDescription)
-            return
-        }
-    }
-
-}  // CBPeripheralDelegate extension

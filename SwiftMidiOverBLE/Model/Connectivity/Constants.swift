@@ -8,7 +8,9 @@
 import CoreBluetooth
 import Foundation
 
-struct MidiIdentifiers {
+struct Constants {
+    static let unknownRemoteName = String(localized: "UNKNOWN", comment: "Capitalized unknown remote name")
+    
     static let gapService = CBUUID(
         string: "1800"
     )

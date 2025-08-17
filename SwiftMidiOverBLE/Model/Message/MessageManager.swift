@@ -257,7 +257,7 @@ class MessageManager {
         -> Message?
     {
         return self.messageBuffer.first {
-            $0.port == port && $0.source == source
+            $0.port == port && $0.remote == source
                 && $0.type == .systemExclusive
         }
     }
@@ -273,7 +273,7 @@ class MessageManager {
         }
 
         if let index = self.messageBuffer.firstIndex(where: {
-            $0.port == port && $0.source == source
+            $0.port == port && $0.remote == source
                 && $0.type == .systemExclusive
         }) {
             self.messageBuffer[index] = message
@@ -285,7 +285,7 @@ class MessageManager {
     private func removePendingExclusiveMessage(from source: UUID, at port: Port)
     {
         self.messageBuffer.removeAll {
-            $0.port == port && $0.source == source
+            $0.port == port && $0.remote == source
                 && $0.type == .systemExclusive
         }
     }
@@ -294,12 +294,12 @@ class MessageManager {
         message: Message?,
         report error: inout MidiError?
     ) -> Message? {
-        guard let message = message, let port = message.port, let source = message.source else {
+        guard let message = message, let port = message.port, let source = message.remote else {
             return nil
         }
 
         let bankProgramChangeBufferIndex = self.messageBuffer.firstIndex {
-            $0.port == port && $0.source == source
+            $0.port == port && $0.remote == source
                 && $0.type == .bankProgramChange
         }
 
@@ -319,7 +319,7 @@ class MessageManager {
                             "Bank LSB is missing between bank MSB and program change"
                         )
                         messageBuffer.removeAll {
-                            $0.port == port && $0.source == source
+                            $0.port == port && $0.remote == source
                                 && $0.type == .bankProgramChange
                         }
                         return nil
@@ -376,7 +376,7 @@ class MessageManager {
                     "Interrupted bank program change sequence"
                 )
                 messageBuffer.removeAll {
-                    $0.port == port && $0.source == source
+                    $0.port == port && $0.remote == source
                         && $0.type == .bankProgramChange
                 }
             }

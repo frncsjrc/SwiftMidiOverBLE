@@ -15,27 +15,15 @@ enum Port: Int {
     case bluetoothMidiCentral
 
     var icon: some View {
-        switch self {
-        case .localPeripheral:
-            return Group {
-                Image(systemName: "ipad.landscape.and.iphone")
+            switch self {
+            case .localPeripheral:
                 Image(systemName: "p.square")
-            }
-        case .localCentral:
-            return Group {
-                Image(systemName: "ipad.landscape.and.iphone")
+            case .localCentral:
+                Image(systemName: "c.square")
+            case .bluetoothMidiPeripheral:
+                Image(systemName: "p.square")
+            case .bluetoothMidiCentral:
                 Image(systemName: "c.square")
             }
-        case .bluetoothMidiPeripheral:
-            return Group {
-                Image(systemName: "antenna.radiowaves.left.and.right")
-                Image(systemName: "p.square")
-            }
-        case .bluetoothMidiCentral:
-            return Group {
-                Image(systemName: "antenna.radiowaves.left.and.right")
-                Image(systemName: "c.square")
-            }
-        }
     }
 }
