@@ -19,7 +19,7 @@ struct RemoteCentralView: View {
         details?.state ?? .offline == .connected ? "ON" : "OFF"
     }
     var name: String {
-        details?.name ?? Constants.unknownRemoteName
+        details != nil && details?.name != Constants.unknownRemoteName ? details!.name : ""
     }
 
     var body: some View {

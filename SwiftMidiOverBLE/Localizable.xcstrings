@@ -12,6 +12,28 @@
         }
       }
     },
+    "Destination" : {
+      "comment" : "Label for destination picker in outgoing view",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destination"
+          }
+        }
+      }
+    },
+    "No destinations available" : {
+      "comment" : "Warn no destinations are available in outgoing view",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No destinations availalable"
+          }
+        }
+      }
+    },
     "No Messages" : {
       "comment" : "Warn no messages have been received",
       "localizations" : {
@@ -68,6 +90,7 @@
       }
     },
     "Sample 1" : {
+      "comment" : "Label for the first outgoing sample",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -78,6 +101,7 @@
       }
     },
     "Sample 2" : {
+      "comment" : "Label for the first outgoing sample",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -88,6 +112,7 @@
       }
     },
     "Sample 3" : {
+      "comment" : "Label for the first outgoing sample",
       "localizations" : {
         "en" : {
           "stringUnit" : {

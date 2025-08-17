@@ -210,36 +210,6 @@
             endingLineNumber = "316"
             landmarkName = "processCompound(message:report:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "08790FFB-F04A-428B-8EFF-E27B838CCCF7 - 848d09a436182caf"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "SwiftMidiOverBLE.MessageManager.processCompound(message: Swift.Optional&lt;SwiftMidiOverBLE.Message&gt;, report: inout Swift.Optional&lt;SwiftMidiOverBLE.MidiError&gt;) -&gt; Swift.Optional&lt;SwiftMidiOverBLE.Message&gt;"
-                  moduleName = "SwiftMidiOverBLE.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/francoisjrclement/Xcode/SwiftMidiOverBLE/SwiftMidiOverBLE/Model/MessageManager.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "316"
-                  endingLineNumber = "316">
-               </Location>
-               <Location
-                  uuid = "08790FFB-F04A-428B-8EFF-E27B838CCCF7 - 848d09a436182caf"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "SwiftMidiOverBLE.MessageManager.processCompound(message: Swift.Optional&lt;SwiftMidiOverBLE.Message&gt;, report: inout Swift.Optional&lt;SwiftMidiOverBLE.MidiError&gt;) -&gt; Swift.Optional&lt;SwiftMidiOverBLE.Message&gt;"
-                  moduleName = "SwiftMidiOverBLE.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/francoisjrclement/Xcode/SwiftMidiOverBLE/SwiftMidiOverBLE/Model/MessageManager.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "316"
-                  endingLineNumber = "316">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -262,7 +232,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "43042C81-11F2-4FA3-989C-7EE653941324"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "SwiftMidiOverBLE/Model/Connectivity/MidiCentral.swift"
@@ -278,7 +248,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "5D06D9C0-D697-4AE5-90A7-F975232F2233"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "SwiftMidiOverBLE/Model/Connectivity/MidiCentral.swift"
@@ -294,7 +264,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "E0D1E81C-F8B1-4E06-B64E-EEED8FC9F659"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "SwiftMidiOverBLE/Model/Connectivity/MidiCentral.swift"
@@ -304,43 +274,13 @@
             endingLineNumber = "135"
             landmarkName = "requestRemoteName(for:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "E0D1E81C-F8B1-4E06-B64E-EEED8FC9F659 - 4f0e308fb8bafe35"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "SwiftMidiOverBLE.MidiCentral.requestRemoteName(for: Foundation.UUID) -&gt; Swift.String"
-                  moduleName = "SwiftMidiOverBLE.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/francoisjrclement/Xcode/SwiftMidiOverBLE/SwiftMidiOverBLE/Model/Connectivity/MidiCentral.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "135"
-                  endingLineNumber = "135">
-               </Location>
-               <Location
-                  uuid = "E0D1E81C-F8B1-4E06-B64E-EEED8FC9F659 - 1d343b96aa1b44b0"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (__C.CBPeripheral) -&gt; Swift.Bool in SwiftMidiOverBLE.MidiCentral.requestRemoteName(for: Foundation.UUID) -&gt; Swift.String"
-                  moduleName = "SwiftMidiOverBLE.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/francoisjrclement/Xcode/SwiftMidiOverBLE/SwiftMidiOverBLE/Model/Connectivity/MidiCentral.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "135"
-                  endingLineNumber = "135">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "1120EB57-C9F9-4BD3-9CC2-80A1A9B3FF76"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "SwiftMidiOverBLE/Model/Connectivity/MidiPeripheral.swift"

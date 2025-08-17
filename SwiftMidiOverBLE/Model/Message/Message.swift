@@ -10,8 +10,8 @@ import SwiftUI
 
 class Message {
     var port: Port?
-    var source: UUID?
-    var sourceStamp: UInt16?
+    var remote: UUID?
+    var remoteStamp: UInt16?
     var localStamp: UInt64
     var type: MessageType
     var channel: UInt8
@@ -27,8 +27,8 @@ class Message {
         data: [UInt8]
     ) {
         self.port = port
-        self.source = source
-        self.sourceStamp = sourceStamp
+        self.remote = source
+        self.remoteStamp = sourceStamp
         self.localStamp = localStamp
         self.type = type
         self.channel = channel
@@ -37,8 +37,8 @@ class Message {
 
     init(_ message: Message) {
         self.port = message.port
-        self.source = message.source
-        self.sourceStamp = message.sourceStamp
+        self.remote = message.remote
+        self.remoteStamp = message.remoteStamp
         self.localStamp = message.localStamp
         self.type = message.type
         self.channel = message.channel
@@ -48,16 +48,18 @@ class Message {
     var status: UInt8 {
         return type.status < 0xF0 ? type.status | channel : type.status
     }
-    
+
     var portIcon: some View {
         Group {
-            if let port = self.port { port.icon} else { EmptyView() }
+            if let port = self.port { port.icon } else { EmptyView() }
         }
     }
-    
+
     var sourceName: String {
-        guard let port = self.port, let source = self.source else { return Constants.unknownRemoteName }
-        
+        guard let port = self.port, let source = self.remote else {
+            return Constants.unknownRemoteName
+        }
+
         switch port {
         case .bluetoothMidiPeripheral:
             return MidiPeripheral.shared.centralName(source)
@@ -97,17 +99,17 @@ class Message {
         }
         return returnedValue
     }
-    
+
     var toStringWithLocalStamp: String {
         "\(localStampToString) \(toStringNoStamp)"
     }
-    
+
     var toStringWithSourceNameAndLocalStamp: String {
         return "\(sourceName) - \(localStampToString) \(toStringNoStamp)"
     }
 
     var toStringWithSourceStamp: String {
-        "\(sourceStamp ?? 0) \(toStringNoStamp)"
+        "\(remoteStamp ?? 0) \(toStringNoStamp)"
     }
 
     var category: MidiMessageCategory {

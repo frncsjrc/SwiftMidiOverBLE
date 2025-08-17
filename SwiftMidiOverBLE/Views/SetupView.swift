@@ -108,33 +108,6 @@ struct SetupView: View {
                     }
                 }
             }
-
-            VStack {
-                Button(
-                    "Sample 1",
-                    systemImage: "play",
-                    action: {
-                        central.send(Message.samples1[0])
-                    }
-                )
-
-                Button(
-                    "Sample 2",
-                    systemImage: "play",
-                    action: {
-                        central.send(Message.samples2[0])
-                    }
-                )
-
-                Button(
-                    "Sample 3",
-                    systemImage: "play",
-                    action: {
-                        central.send(Message.samples2[1])
-                    }
-                )
-            }
-            .padding(.vertical)
         }
     }
 }

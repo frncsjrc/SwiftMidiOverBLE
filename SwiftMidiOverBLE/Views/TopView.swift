@@ -22,6 +22,8 @@ struct TopView: View, MessageManagerDelegate {
                 VStack(alignment: .leading) {
                     SetupView(peripheral: $peripheral, central: $central)
                     Divider()
+                    OutgoingView(peripheral: $peripheral, central: $central)
+                    Divider()
                     IncomingView(messages: incomingMessages)
                 }
                 .padding()
@@ -29,6 +31,8 @@ struct TopView: View, MessageManagerDelegate {
                 HStack(alignment: .top) {
                     VStack {
                         SetupView(peripheral: $peripheral, central: $central)
+                        Divider()
+                        OutgoingView(peripheral: $peripheral, central: $central)
                     }
                     Divider()
                     VStack {
