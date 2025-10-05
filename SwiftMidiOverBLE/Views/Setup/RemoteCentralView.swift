@@ -19,24 +19,30 @@ struct RemoteCentralView: View {
         details?.state ?? .offline == .connected ? "ON" : "OFF"
     }
     var name: String {
-        details != nil && details?.name != Constants.unknownRemoteName ? details!.name : ""
+        let remoteName = RemoteManager.shared.remoteName(for: identifier, on: peripheral)
+        return remoteName != Constants.unknownRemoteName ? remoteName : ""
     }
 
     var body: some View {
-        HStack {
+        Group {
             Text(identifier.uuidString)
                 .font(.system(size: 14).monospaced())
+                .truncationMode(.middle)
                 .foregroundStyle(.secondary)
 
             
             Button(
                 state,
                 action: {
-                    // Nothing to be done as this button is always disabled
+                    if state == "ON" {
+                        peripheral.disconnect(identifier)
+                    } else {
+                        peripheral.connect(identifier)
+                    }
                 }
             )
             .font(.caption)
-            .disabled(true)
+            .disabled(details?.state ?? .offline == .offline)
             .buttonStyle(.borderedProminent)
             .buttonBorderShape(.capsule)
             .frame(minWidth: 60)
@@ -45,7 +51,9 @@ struct RemoteCentralView: View {
 
             Text(name)
                 .font(.headline)
+                .gridColumnAlignment(.leading)
         }
+        .scaledToFit()
     }
 }
 

@@ -23,9 +23,10 @@ struct RemotePeripheralView: View {
     }
 
     var body: some View {
-        HStack {
+        Group {
             Text(identifier.uuidString)
                 .font(.system(size: 14).monospaced())
+                .truncationMode(.middle)
                 .foregroundStyle(.secondary)
 
             
@@ -49,7 +50,9 @@ struct RemotePeripheralView: View {
 
             Text(name)
                 .font(.headline)
+                .gridColumnAlignment(.leading)
         }
+        .scaledToFit()
     }
 }
 

@@ -101,7 +101,7 @@ enum MessageType: String, CaseIterable, Identifiable, Codable {
         case .activeSensing: return 0xFE
         case .systemReset: return 0xFF
 
-            // Return the first status for compound message types
+        // Return the first status for compound message types
         case .note: return 0x90
         case .bankProgramChange: return 0xB0
         }

@@ -21,6 +21,16 @@ class Peripheral: NSObject {
     func startup() {
         print("setting up peripheral")
     }
+    
+    func connect(_ central: UUID) {
+        print("connecting to \(centralName(central))")
+        remoteCentrals[central]?.state = .connected
+    }
+
+    func disconnect(_ central: UUID) {
+        print("disconnecting from \(centralName(central))")
+        remoteCentrals[central]?.state = .disconnected
+    }
 
     func send(_ message: Message, to centrals: [UUID] = []) {
         print("sending \(message) to \(centrals)")

@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum MidiMessageCategory: String, CaseIterable, Identifiable, Codable {
+enum MessageCategory: String, CaseIterable, Identifiable, Codable {
     case voiceMessage = "channel voic message"
     case modeMessage = "channel mode message"
     case realTimeMessage = "system real time message"

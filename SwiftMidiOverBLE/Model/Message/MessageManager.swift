@@ -14,6 +14,8 @@ class MessageManager {
     private let timeKeeper: TimeKeeper = .shared
 
     var delegate: MessageManagerDelegate? = nil
+    
+    var filter = MessageFilter(role: .discard, masks: [MessageMask(type: .activeSensing)])
 
     private var messageBuffer: [Message] = []
 
@@ -182,8 +184,8 @@ class MessageManager {
                     pendingExclusiveMessage =
                         Message(
                             port: port,
-                            source: source,
-                            sourceStamp: timeStamp,
+                            remote: source,
+                            remoteStamp: timeStamp,
                             type: .systemExclusive,
                             channel: 0xFF,
                             data: dataBuffer
@@ -206,8 +208,8 @@ class MessageManager {
 
                 var receivedMessage: Message? = Message(
                     port: port,
-                    source: source,
-                    sourceStamp: timeStamp,
+                    remote: source,
+                    remoteStamp: timeStamp,
                     type: runningType,
                     channel: runningStatus & 0x0F,
                     data: []
@@ -230,7 +232,11 @@ class MessageManager {
                 )
 
                 if let receivedMessage {
-                    decodedMessages.append(receivedMessage)
+                    if filter.preserve(receivedMessage) {
+                        decodedMessages.append(receivedMessage)
+                    } else {
+                        print("Message filtered out: \(receivedMessage)")
+                    }
                 }
 
                 index += expectedDataSize

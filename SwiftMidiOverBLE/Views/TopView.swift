@@ -11,6 +11,8 @@ import SwiftUI
 struct TopView: View, MessageManagerDelegate {
     @Environment(\.deviceGeometry) private var deviceGeometry
 
+    @State private var range: MessageMask.Bounds? = (lower: 10, upper: 100)
+    
     @Binding var peripheral: Peripheral
     @Binding var central: Central
 
@@ -20,6 +22,8 @@ struct TopView: View, MessageManagerDelegate {
         Group {
             if deviceGeometry.isPortrait {
                 VStack(alignment: .leading) {
+//                    RangePicker(range: $range, minimumValue: 2, maximumValue: 123, allowRange: true)
+//                        .font(.system(size: 12))
                     SetupView(peripheral: $peripheral, central: $central)
                     Divider()
                     OutgoingView(peripheral: $peripheral, central: $central)
@@ -57,7 +61,8 @@ struct TopView: View, MessageManagerDelegate {
 #Preview("portrait") {
     @Previewable @State var peripheral = Peripheral()
     @Previewable @State var central = Central()
-
+    
+    RemoteManager.shared.pseudos[Peripheral.remoteSamples1.first!.key] = "Test 1"
     peripheral.remoteCentrals = Peripheral.remoteSamples1
     central.remotePeripherals = Central.remoteSamples1
 

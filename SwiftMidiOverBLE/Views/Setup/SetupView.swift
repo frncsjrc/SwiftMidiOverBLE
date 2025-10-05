@@ -58,14 +58,18 @@ struct SetupView: View {
                         }
                         .padding(.top)
                     } else {
-                        ForEach(
-                            peripheral.remoteCentrals.keys.sorted(),
-                            id: \.self
-                        ) { central in
-                            RemoteCentralView(
-                                peripheral: $peripheral,
-                                identifier: central
-                            )
+                        Grid {
+                            ForEach(
+                                peripheral.remoteCentrals.keys.sorted(),
+                                id: \.self
+                            ) { central in
+                                GridRow {
+                                    RemoteCentralView(
+                                        peripheral: $peripheral,
+                                        identifier: central
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -96,14 +100,18 @@ struct SetupView: View {
                         }
                         .padding(.top)
                     } else {
-                        ForEach(
-                            central.remotePeripherals.keys.sorted(),
-                            id: \.self
-                        ) { peripheral in
-                            RemotePeripheralView(
-                                central: $central,
-                                identifier: peripheral
-                            )
+                        Grid {
+                            ForEach(
+                                central.remotePeripherals.keys.sorted(),
+                                id: \.self
+                            ) { peripheral in
+                                GridRow {
+                                    RemotePeripheralView(
+                                        central: $central,
+                                        identifier: peripheral
+                                    )
+                                }
+                            }
                         }
                     }
                 }

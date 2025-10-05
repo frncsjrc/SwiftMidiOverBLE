@@ -37,13 +37,12 @@ struct IncomingView: View {
                         )
                         .font(.system(size: 12))
                         .lineLimit(1)
-                        .truncationMode(.tail)
+                        .truncationMode(.middle)
                         Spacer()
                     }
                 }
             }
         }
-        .padding(.leading)
     }
 }
 
