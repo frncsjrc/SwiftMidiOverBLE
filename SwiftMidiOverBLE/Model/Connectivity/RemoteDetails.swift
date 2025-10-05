@@ -9,6 +9,7 @@ import Foundation
 
 struct RemoteDetails {
     var name: String
+    var enable: Bool = true
     var state: RemoteState = .offline
     var manufacturer: String? = nil
     var model: String? = nil

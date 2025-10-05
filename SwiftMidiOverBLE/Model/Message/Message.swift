@@ -19,16 +19,16 @@ class Message {
 
     init(
         port: Port? = nil,
-        source: UUID? = nil,
-        sourceStamp: UInt16? = nil,
+        remote: UUID? = nil,
+        remoteStamp: UInt16? = nil,
         localStamp: UInt64 = TimeKeeper.currentTime(),
         type: MessageType,
         channel: UInt8,
         data: [UInt8]
     ) {
         self.port = port
-        self.remote = source
-        self.remoteStamp = sourceStamp
+        self.remote = remote
+        self.remoteStamp = remoteStamp
         self.localStamp = localStamp
         self.type = type
         self.channel = channel
@@ -43,6 +43,19 @@ class Message {
         self.type = message.type
         self.channel = message.channel
         self.data = message.data
+    }
+
+    var category: MessageCategory {
+        if type == .controlChange {
+            return data[0] < 120 ? .voiceMessage : .modeMessage
+        } else if type.status < 0xF0 {
+            return .voiceMessage
+        } else if type == .systemExclusive {
+            return .exclusiveMessage
+        } else {
+            return type.status & 0xF8 == 0xF0
+                ? .commonMessage : .realTimeMessage
+        }
     }
 
     var status: UInt8 {
@@ -112,19 +125,6 @@ class Message {
         "\(remoteStamp ?? 0) \(toStringNoStamp)"
     }
 
-    var category: MidiMessageCategory {
-        if type == .controlChange {
-            return data[0] < 120 ? .voiceMessage : .modeMessage
-        } else if type.status < 0xF0 {
-            return .voiceMessage
-        } else if type == .systemExclusive {
-            return .exclusiveMessage
-        } else {
-            return type.status & 0xF8 == 0xF0
-                ? .commonMessage : .realTimeMessage
-        }
-    }
-
     private var localStampToString: String {
         return TimeKeeper.shared.toString(localStamp, 0)
     }
@@ -138,25 +138,31 @@ extension Message {
 
 extension Message {
     static let samples1: [Message] = [
+        Message(type: .noteOn, channel: 5, data: [17, 23]),
+        Message(type: .noteOff, channel: 5, data: [17, 23]),
+        Message(type: .note, channel: 5, data: [17, 23]),
+        Message(type: .controlChange, channel: 5, data: [17, 23]),
+        Message(type: .pitchBend, channel: 5, data: [17, 23]),
+        Message(type: .polyPressure, channel: 5, data: [17, 23]),
+        Message(type: .programChange, channel: 5, data: [17, 23]),
+        Message(type: .bankProgramChange, channel: 5, data: [17, 23, 91]),
+        Message(type: .channelPressure, channel: 5, data: [17, 23]),
+        Message(type: .activeSensing, channel: 5, data: [17, 23]),
+        Message(type: .continuePlaying, channel: 5, data: [17, 23]),
+        Message(type: .timeClock, channel: 5, data: [17, 23]),
+        Message(type: .midiTimeCodeQuarterFrame, channel: 5, data: [17, 23]),
         Message(
-            localStamp: 0,
-            type: .noteOn,
-            channel: 0,
-            data: [60, 100]
-        ),
-        Message(
-            localStamp: 12,
-            type: .noteOff,
-            channel: 0,
-            data: [60, 100]
+            type: .systemExclusive,
+            channel: 5,
+            data: [17, 23, 127, 33, 53, 98, 1, 45]
         ),
     ]
 
     static let samples2: [Message] = [
         Message(
             port: .bluetoothMidiCentral,
-            source: UUID(uuidString: "F04C8475-B5A3-4E4C-A5CF-C5C0AABF6F26"),
-            sourceStamp: 7,
+            remote: UUID(uuidString: "F04C8475-B5A3-4E4C-A5CF-C5C0AABF6F26"),
+            remoteStamp: 7,
             localStamp: 19,
             type: .note,
             channel: 0,
@@ -164,8 +170,8 @@ extension Message {
         ),
         Message(
             port: .bluetoothMidiPeripheral,
-            source: UUID(uuidString: "E8D4F8C3-E4F8-4AC9-A74E-E413E1F7C57E"),
-            sourceStamp: 16,
+            remote: UUID(uuidString: "E8D4F8C3-E4F8-4AC9-A74E-E413E1F7C57E"),
+            remoteStamp: 16,
             localStamp: 53,
             type: .bankProgramChange,
             channel: 0,

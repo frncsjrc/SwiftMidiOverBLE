@@ -1,6 +1,12 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
+    "%lld" : {
+
+    },
     "Advertize" : {
       "comment" : "Toggle advertize text",
       "localizations" : {
@@ -12,6 +18,49 @@
         }
       }
     },
+    "Any value" : {
+      "comment" : "Label in the range picker view when the user wants to select any value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Any value"
+          }
+        }
+      }
+    },
+    "At least" : {
+      "comment" : "Label in the range picker view when the user wants to select values starting from a minimum",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At least"
+          }
+        }
+      }
+    },
+    "At most" : {
+      "comment" : "Label in the range picker view when the user wants to select values up to a maximum",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At most"
+          }
+        }
+      }
+    },
+    "Channel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Channel"
+          }
+        }
+      }
+    },
     "Destination" : {
       "comment" : "Label for destination picker in outgoing view",
       "localizations" : {
@@ -19,6 +68,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Destination"
+          }
+        }
+      }
+    },
+    "Exactly" : {
+      "comment" : "Label in the range picker view when the user wants to select a specific value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exactly"
           }
         }
       }
@@ -63,6 +123,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No subscribed remote centrals"
+          }
+        }
+      }
+    },
+    "Range" : {
+      "comment" : "Label in the range picker view when the user wants to select a range",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Range"
           }
         }
       }
@@ -129,6 +200,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scan"
+          }
+        }
+      }
+    },
+    "Type" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type"
           }
         }
       }
